@@ -144,28 +144,6 @@ python -m pytest --cov=expense_tracker tests/
 - 🔄 **Tracker Tests**: 2/28 passing - Business logic (in progress)
 - 🔄 **API Tests**: 0/4 passing - REST endpoints (in progress)
 
-## 🏗️ Project Structure
-
-```
-expense_tracker_system/
-├── expense_tracker/          # Main package
-│   ├── __init__.py
-│   ├── api.py               # FastAPI application
-│   ├── database.py          # Database models and operations
-│   ├── models.py            # Pydantic models and business logic
-│   ├── tracker.py           # Main expense tracker class
-│   └── cli.py               # Command-line interface
-├── tests/                   # Test suite
-│   ├── test_api.py
-│   ├── test_database.py
-│   ├── test_models.py
-│   ├── test_tracker.py
-│   └── conftest.py
-├── run.py                   # Main runner script
-├── requirements.txt         # Dependencies
-├── setup.py                # Package configuration
-└── pyproject.toml          # Build system configuration
-```
 
 ## 🔧 Advanced Usage
 
@@ -232,3 +210,4 @@ python -m pytest tests/
   <br>
   <sub>If you find this useful, please consider giving it a ⭐ on GitHub!</sub>
 </div>
+

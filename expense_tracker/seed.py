@@ -21,7 +21,6 @@ class DataSeeder:
         self.db_path = db_path
         self.categories = ["Food", "Transport", "Entertainment", "Bills", "Shopping"]
         
-        # Create data directory
         os.makedirs(os.path.dirname(db_path), exist_ok=True)
     
     def generate_expense_data(self, count: int) -> List[Dict]:
@@ -44,7 +43,7 @@ class DataSeeder:
     def save_batch_to_db(self, batch: List[Dict], thread_id: int = 0) -> int:
         """Save a batch of expenses (I/O-bound operation)."""
         print(f"  Thread {thread_id}: Saving {len(batch)} expenses...")
-        time.sleep(0.1)  # Simulate I/O delay
+        time.sleep(0.1) 
         
         try:
             db = Database(self.db_path)
@@ -52,7 +51,7 @@ class DataSeeder:
             
             for expense in batch:
                 try:
-                    # Convert date string to date object
+                    
                     if 'date' in expense and isinstance(expense['date'], str):
                         expense['date'] = date.fromisoformat(expense['date'])
                     
@@ -75,32 +74,26 @@ class DataSeeder:
         
         start_time = time.time()
         
-        # Split work into batches for threads
         num_threads = 4
         batch_size = total_expenses // num_threads
         
-        # Generate all data first
         print("Generating expense data...")
         all_data = self.generate_expense_data(total_expenses)
         
-        # Split into batches for threads
         batches = []
         for i in range(num_threads):
             start_idx = i * batch_size
             end_idx = start_idx + batch_size if i < num_threads - 1 else total_expenses
             batches.append(all_data[start_idx:end_idx])
         
-        # Use ThreadPoolExecutor for I/O-bound operations
         print(f"Using {num_threads} threads for database operations...")
         with concurrent.futures.ThreadPoolExecutor(max_workers=num_threads) as executor:
-            # Submit tasks to threads
             futures = []
             for i, batch in enumerate(batches):
-                if batch:  # Only submit if batch has data
+                if batch: 
                     future = executor.submit(self.save_batch_to_db, batch, i+1)
                     futures.append(future)
             
-            # Collect results
             total_saved = 0
             for future in concurrent.futures.as_completed(futures):
                 try:
@@ -116,7 +109,6 @@ class DataSeeder:
         print(f"✅ Seeding completed in {elapsed_time:.2f} seconds")
         print(f"📊 Total expenses saved: {total_saved}")
         
-        # Get database statistics
         try:
             db = Database(self.db_path)
             stats = db.get_statistics()
@@ -137,10 +129,8 @@ class DataSeeder:
         
         start_time = time.time()
         
-        # Generate data
         data = self.generate_expense_data(total_expenses)
         
-        # Save to database (single thread)
         saved = self.save_batch_to_db(data, 1)
         
         elapsed_time = time.time() - start_time
@@ -158,22 +148,18 @@ class DataSeeder:
         print("EXPENSE TRACKER - DATA SEEDING DEMONSTRATION")
         print("=" * 60)
         
-        # First run without threading
         print("\n1️⃣  SINGLE THREAD (Baseline):")
         single_start = time.time()
         single_saved = self.seed_without_threading(100)
         single_time = time.time() - single_start
         
-        # Clear some data to start fresh
         time.sleep(1)
         
-        # Then run with threading
         print("\n2️⃣  WITH THREADING (4 threads):")
         thread_start = time.time()
         thread_saved = self.seed_with_threading(100)
         thread_time = time.time() - thread_start
         
-        # Comparison
         print("\n" + "=" * 60)
         print("📊 COMPARISON RESULTS")
         print("=" * 60)

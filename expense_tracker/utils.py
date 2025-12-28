@@ -13,11 +13,10 @@ from datetime import datetime, date
 from decimal import Decimal, ROUND_HALF_UP
 from pathlib import Path
 
-# Type variable for decorators
+
 F = TypeVar('F', bound=Callable[..., Any])
 
 
-# ========== DECORATORS ==========
 def log_action(fn: F) -> F:
     """Decorator to log function calls."""
     @functools.wraps(fn)
@@ -131,28 +130,26 @@ def format_date(dt: Any, fmt: str = "%Y-%m-%d") -> str:
         raise ValueError(f"Cannot format type: {type(dt)}")
 
 
-# ========== CALCULATION FUNCTIONS ==========
 def calculate_monthly_summary(expenses: list, sort_by: str = 'date') -> dict:
     """Calculate monthly expense summary."""
     monthly = {}
     
     for expense in expenses:
-        # Get month key
         month_key = None
         if hasattr(expense, 'date'):
             exp_date = expense.date
             if isinstance(exp_date, str):
-                month_key = exp_date[:7]  # 'YYYY-MM'
+                month_key = exp_date[:7] 
             elif hasattr(exp_date, 'strftime'):
                 month_key = exp_date.strftime("%Y-%m")
         
         if not month_key:
             continue
         
-        # Get amount
+       
         amount = getattr(expense, 'amount', 0)
         
-        # Initialize or update
+
         if month_key not in monthly:
             monthly[month_key] = {
                 'total': 0.0,
@@ -164,18 +161,17 @@ def calculate_monthly_summary(expenses: list, sort_by: str = 'date') -> dict:
         monthly[month_key]['total'] += amount
         monthly[month_key]['count'] += 1
         
-        # Track by category
+
         category = getattr(expense, 'category', 'Uncategorized')
         if category not in monthly[month_key]['categories']:
             monthly[month_key]['categories'][category] = 0.0
         monthly[month_key]['categories'][category] += amount
-    
-    # Calculate averages
+
     for data in monthly.values():
         if data['count'] > 0:
             data['average'] = data['total'] / data['count']
     
-    # Sort if requested
+
     if sort_by == 'date':
         monthly = dict(sorted(monthly.items()))
     elif sort_by == 'total':
@@ -193,7 +189,6 @@ def calculate_percentages(values: dict) -> dict:
     return {k: (v / total) * 100 for k, v in values.items()}
 
 
-# ========== FILE OPERATIONS ==========
 def read_json_file(filepath: str, default: Any = None) -> Any:
     """Read and parse JSON file."""
     try:
@@ -234,7 +229,6 @@ def export_to_csv(data: list, filepath: str) -> bool:
         return False
 
 
-# ========== CONFIGURATION ==========
 def load_config() -> dict:
     """Load configuration from environment variables."""
     config = {
@@ -249,7 +243,6 @@ def load_config() -> dict:
     return config
 
 
-# ========== MISC UTILITIES ==========
 def get_timestamp() -> str:
     """Get current timestamp string."""
     return datetime.now().isoformat()

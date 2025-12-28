@@ -30,7 +30,6 @@ class Expense:
         self._description = ""
         self._date = None
 
-        # Use setters for validation
         self.amount = amount
         self.category = category
         self.description = description
@@ -60,7 +59,7 @@ class Expense:
         if val < 0:
             raise ValueError("Amount must be non-negative")
         
-        self._amount = round(val, 2)  # Round to 2 decimal places
+        self._amount = round(val, 2)
 
     @property
     def category(self) -> str:
@@ -105,23 +104,18 @@ class Expense:
             self._date = date.today()
             return
         
-        # Already a date object
         if isinstance(value, date):
             self._date = value
             return
         
-        # Datetime object - extract date part
         if isinstance(value, datetime):
             self._date = value.date()
             return
         
-        # String - try to parse
         if isinstance(value, str):
             value = value.strip()
             
-            # Try ISO format first
             try:
-                # Check if it's a datetime string
                 if 'T' in value or ' ' in value:
                     dt = datetime.fromisoformat(value.replace('Z', '+00:00'))
                     self._date = dt.date()
@@ -336,7 +330,7 @@ class Category:
 
 class StatisticsManager:
     """Manager for computing various statistics on expenses."""
-    _instance = None  # Remove singleton pattern or fix reset
+    _instance = None 
     
     def __new__(cls):
         # Reset for testing
@@ -344,7 +338,7 @@ class StatisticsManager:
         return super().__new__(cls)
     
     def __init__(self):
-        # Check if already initialized
+       
         if hasattr(self, '_stats'):
             return
         self._stats = {}
@@ -367,7 +361,7 @@ class StatisticsManager:
         self.register("monthly_total", self._compute_monthly_total)
 
 
-            # Register by_category statistic
+
         def by_category_func(expenses):
             result = {}
             for exp in expenses:
@@ -469,12 +463,10 @@ class StatisticsManager:
         return f"StatisticsManager(statistics={list(self._stats.keys())})"
 
 
-# Helper functions
 def validate_expense_data(data: Dict[str, Any]) -> Dict[str, Any]:
     """Validate and normalize expense data."""
     validated = data.copy()
     
-    # Validate amount
     if 'amount' in validated:
         try:
             validated['amount'] = float(validated['amount'])
@@ -483,10 +475,8 @@ def validate_expense_data(data: Dict[str, Any]) -> Dict[str, Any]:
         except (TypeError, ValueError) as e:
             raise ValueError(f"Invalid amount: {e}")
     
-    # Validate date
     if 'date' in validated and validated['date']:
         if isinstance(validated['date'], str):
-            # Try to parse date string
             try:
                 if 'T' in validated['date']:
                     dt = datetime.fromisoformat(validated['date'].replace('Z', '+00:00'))
@@ -504,7 +494,6 @@ def create_expense_from_input(amount: Union[float, str],
                              description: Optional[str] = None,
                              date_str: Optional[str] = None) -> Expense:
     """Create an expense from user input."""
-    # Parse date
     date_value = None
     if date_str:
         try:
@@ -514,7 +503,6 @@ def create_expense_from_input(amount: Union[float, str],
             else:
                 date_value = date.fromisoformat(date_str)
         except ValueError:
-            # Try common formats
             for fmt in ['%Y-%m-%d', '%d/%m/%Y', '%m/%d/%Y']:
                 try:
                     dt = datetime.strptime(date_str, fmt)

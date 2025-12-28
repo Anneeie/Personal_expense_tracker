@@ -7,7 +7,6 @@ import sys
 from datetime import date, datetime
 from decimal import Decimal
 
-# Add the project root to the Python path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
@@ -22,7 +21,6 @@ def temp_db_path():
     with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as tmp:
         db_path = tmp.name
     yield db_path
-    # Cleanup after tests
     if os.path.exists(db_path):
         try:
             os.unlink(db_path)
@@ -58,7 +56,6 @@ def database(temp_db_path):
     """Database instance with temporary database."""
     db = Database(temp_db_path)
     yield db
-    # Cleanup session
     try:
         db.engine.dispose()
     except:
@@ -93,22 +90,17 @@ def sample_categories():
     ]
 
 
-# tests/conftest.py - UPDATE statistics_manager fixture
 @pytest.fixture
 def statistics_manager():
     """StatisticsManager instance for testing."""
-    # Create a fresh instance and manually register statistics
     from expense_tracker.models import StatisticsManager
     
-    # Reset singleton if it exists
     if hasattr(StatisticsManager, '_instance'):
         StatisticsManager._instance = None
     
     manager = StatisticsManager()
     
-    # Manually register the built-in statistics if _register_builtins doesn't exist
     if not hasattr(manager, '_register_builtins'):
-        # Register built-in statistics manually
         manager.register("total", lambda expenses: sum(exp.amount for exp in expenses))
         manager.register("average", lambda expenses: sum(exp.amount for exp in expenses) / len(expenses) if expenses else 0)
         manager.register("count", lambda expenses: len(expenses))
@@ -124,11 +116,9 @@ def api_client(database):
     from fastapi.testclient import TestClient
     from expense_tracker.api import app
     from expense_tracker.tracker import ExpenseTracker
-    # Set testing environment
 
     os.environ["TESTING"] = "true"
     
-    # Import and override get_tracker if it exists
 
     def override_get_tracker():
         return ExpenseTracker(db_path=database.db_path, auto_load=False)
@@ -145,7 +135,6 @@ def api_client(database):
 @pytest.fixture(autouse=True)
 def reset_singletons():
     """Reset all singleton instances between tests."""
-    # Reset StatisticsManager
     if hasattr(StatisticsManager, '_instance'):
         StatisticsManager._instance = None
     yield

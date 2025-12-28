@@ -14,7 +14,6 @@ __all__ = [
     "app"
 ]
 
-# Lazy imports to avoid circular imports
 def __getattr__(name):
     if name == "Expense":
         from .models import Expense

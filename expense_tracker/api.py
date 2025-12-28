@@ -23,7 +23,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Pydantic models
+
 class ExpenseCreate(BaseModel):
     amount: float
     category: Optional[str] = None
@@ -63,7 +63,7 @@ class StatisticsResponse(BaseModel):
     by_category: Dict[str, float]
     monthly_breakdown: Dict[str, float]
 
-# Database dependency
+
 def get_database():
     return Database(DB_PATH)
 
@@ -127,7 +127,7 @@ def delete_expense(expense_id: str, db: Database = Depends(get_database)):
         raise HTTPException(status_code=404, detail="Expense not found")
     return {"message": "Expense deleted successfully"}
 
-# Category endpoints
+
 @app.get("/categories")
 def get_categories(db: Database = Depends(get_database)):
     """Get all categories."""
@@ -140,7 +140,6 @@ def create_category(category_data: CategoryCreate, db: Database = Depends(get_da
     category_name = db.add_category(category_dict)
     return {"message": f"Category '{category_name}' created"}
 
-# Statistics endpoints
 @app.get("/statistics", response_model=StatisticsResponse)
 def get_statistics(db: Database = Depends(get_database)):
     """Get expense statistics."""
@@ -151,7 +150,6 @@ def get_custom_statistics(tracker: ExpenseTracker = Depends(get_tracker)):
     """Get custom statistics."""
     return tracker.view_statistics()
 
-# Filter endpoints
 @app.get("/expenses/filter")
 def filter_expenses(
     start_date: Optional[date] = None,

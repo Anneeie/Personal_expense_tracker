@@ -35,14 +35,12 @@ class ExpenseTracker:
             except Exception:
                 pass
 
-# In expense_tracker/tracker.py, update the _register_builtins method:
     def _register_builtins(self):
         """Register built-in statistics for the tracker."""
-        # Safely register statistics, ignoring duplicates
         try:
             self._statistics.register("count", lambda exs: len(exs))
         except ValueError:
-            pass  # Already registered
+            pass
         
         try:
             self._statistics.register("total", lambda exs: sum(exp.amount for exp in exs))
@@ -78,10 +76,8 @@ class ExpenseTracker:
             date_value=date_value
         )
         
-        # Add to database
         self._database.add_expense(exp.to_serializable())
         
-        # Add to local cache
         self._expenses.append(exp)
         return exp
 

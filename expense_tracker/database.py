@@ -58,12 +58,11 @@ class Database:
     
     def __init__(self, db_path: str = "data/expenses.db"):
         self.db_path = db_path
-        # Create directory if it doesn't exist
         Path(db_path).parent.mkdir(parents=True, exist_ok=True)
         
         self.engine = create_engine(
             f'sqlite:///{db_path}',
-            echo=False,  # Set to True for SQL debugging
+            echo=False,
             pool_pre_ping=True
         )
         self.SessionLocal = sessionmaker(
@@ -90,11 +89,9 @@ class Database:
         finally:
             session.close()
 
-    # ========== Expense CRUD Operations ==========
     def add_expense(self, expense_data: Dict[str, Any]) -> str:
         """Add a new expense to the database."""
         with self.get_session() as session:
-            # Ensure required fields are present
             if 'id' not in expense_data:
                 expense_data['id'] = f"EXP_{datetime.now().timestamp()}"
             if 'date' not in expense_data:
@@ -102,7 +99,7 @@ class Database:
             
             expense = ExpenseDB(**expense_data)
             session.add(expense)
-            session.flush()  # Get the ID
+            session.flush()
             return expense.id
 
     def get_expense(self, expense_id: str) -> Optional[Dict[str, Any]]:
@@ -125,7 +122,6 @@ class Database:
         with self.get_session() as session:
             expense = session.query(ExpenseDB).filter(ExpenseDB.id == expense_id).first()
             if expense:
-                # Don't update ID or created_at
                 updates.pop('id', None)
                 updates.pop('created_at', None)
                 
@@ -150,7 +146,6 @@ class Database:
         with self.get_session() as session:
             query = session.query(ExpenseDB)
             
-            # Apply filters
             if 'start_date' in filters and filters['start_date']:
                 start_date = filters['start_date']
                 if isinstance(start_date, str):
@@ -179,11 +174,9 @@ class Database:
                     (ExpenseDB.category.like(search_text))
                 )
             
-            # Order by date descending (newest first)
             expenses = query.order_by(ExpenseDB.date.desc(), ExpenseDB.created_at.desc()).all()
             return [exp.to_dict() for exp in expenses]
 
-    # ========== Category CRUD Operations ==========
     def add_category(self, category_data: Dict[str, Any]) -> str:
         """Add a new category."""
         with self.get_session() as session:
@@ -204,21 +197,20 @@ class Database:
             category = session.query(CategoryDB).filter(CategoryDB.name == name).first()
             return category.to_dict() if category else None
 
-    # ========== Statistics ==========
     def get_statistics(self) -> Dict[str, Any]:
         """Get expense statistics."""
         with self.get_session() as session:
-            # Total sum
+            
             total_result = session.query(func.sum(ExpenseDB.amount)).scalar()
             total = float(total_result) if total_result else 0.0
             
-            # Count
+            
             count = session.query(func.count(ExpenseDB.id)).scalar() or 0
             
-            # Average
+            
             avg = total / count if count > 0 else 0.0
             
-            # By category
+           
             category_totals = {}
             category_result = session.query(
                 ExpenseDB.category,
@@ -229,7 +221,7 @@ class Database:
                 cat_name = category or "Uncategorized"
                 category_totals[cat_name] = float(total_amount) if total_amount else 0.0
             
-            # Monthly breakdown
+            
             monthly = {}
             monthly_result = session.query(
                 func.strftime('%Y-%m', ExpenseDB.date).label('month'),
@@ -250,7 +242,7 @@ class Database:
     def bulk_insert_expenses(self, expenses_data: List[Dict[str, Any]]) -> int:
         """Insert multiple expenses at once (optimized)."""
         with self.get_session() as session:
-            # Add IDs if missing
+           
             for expense in expenses_data:
                 if 'id' not in expense:
                     expense['id'] = f"BULK_{datetime.now().timestamp()}_{hash(str(expense))}"
@@ -279,7 +271,7 @@ class Database:
         counts = {'expenses': 0, 'categories': 0}
         
         with self.get_session() as session:
-            # Import categories
+            
             if 'categories' in data:
                 for cat_data in data['categories']:
                     # Check if category exists
@@ -291,14 +283,13 @@ class Database:
                         session.add(category)
                         counts['categories'] += 1
             
-            # Import expenses
+            
             if 'expenses' in data:
                 for exp_data in data['expenses']:
-                    # Convert date strings back to date objects
+                
                     if 'date' in exp_data and isinstance(exp_data['date'], str):
                         exp_data['date'] = date.fromisoformat(exp_data['date'])
                     
-                    # Check if expense exists
                     existing = session.query(ExpenseDB).filter(
                         ExpenseDB.id == exp_data.get('id')
                     ).first()

@@ -96,7 +96,6 @@ except ImportError:
             return self.db.filter_expenses(**filters)
             
         def save_to_db(self):
-            # SQLAlchemy auto-commits, so nothing to do here
             self.is_dirty = False
             return True
             
@@ -147,14 +146,13 @@ def print_header(title: str):
 
 def run_cli(db_path: str = "data/expenses.db"):
     """Run the command line interface."""
-    
-    # Ensure data directory exists
+
     os.makedirs(os.path.dirname(db_path), exist_ok=True)
     
     print_header("EXPENSE TRACKER SYSTEM")
     print(f"📁 Database: {db_path}")
     
-    # Initialize database
+
     try:
         if Database:
             db = Database(db_path)
@@ -165,8 +163,7 @@ def run_cli(db_path: str = "data/expenses.db"):
     except Exception as e:
         print(f"❌ Database error: {e}")
         db = None
-    
-    # Initialize tracker
+
     try:
         tracker = ExpenseTracker(db_path=db_path, auto_load=True)
         print("✅ Expense tracker initialized")
@@ -197,7 +194,7 @@ def run_cli(db_path: str = "data/expenses.db"):
         if choice == "1":
             print_header("ADD EXPENSE")
             try:
-                # Get amount
+                
                 while True:
                     amt_str = prompt_input("Amount ($): ")
                     try:
@@ -209,13 +206,13 @@ def run_cli(db_path: str = "data/expenses.db"):
                     except ValueError:
                         print("❌ Please enter a valid number")
                 
-                # Get category
+               
                 category = prompt_input("Category (e.g., Food, Transport): ", "Miscellaneous")
                 
-                # Get description
+                
                 description = prompt_input("Description: ", "")
                 
-                # Get date
+                
                 today = date.today().isoformat()
                 date_str = prompt_input("Date (YYYY-MM-DD): ", today)
                 try:
@@ -224,7 +221,7 @@ def run_cli(db_path: str = "data/expenses.db"):
                     print("⚠️  Invalid date format, using today")
                     expense_date = date.today()
                 
-                # Add expense
+                
                 exp = tracker.add_expense(
                     amount=amount,
                     category=category,
@@ -251,11 +248,11 @@ def run_cli(db_path: str = "data/expenses.db"):
         elif choice == "2":
             print_header("ALL EXPENSES")
             
-            # Ask for format
+           
             format_choice = prompt_input("Format (1=Formatted, 2=JSON): ", "1")
             formatted = format_choice != "2"
             
-            # Ask for limit
+           
             limit_str = prompt_input("Maximum number to show (0 for all): ", "0")
             try:
                 limit = int(limit_str) if limit_str and int(limit_str) > 0 else None
@@ -297,7 +294,7 @@ def run_cli(db_path: str = "data/expenses.db"):
             print_header("STATISTICS")
             
             try:
-                # Get database statistics
+               
                 if hasattr(tracker, 'get_db_statistics'):
                     db_stats = tracker.get_db_statistics()
                     print("📊 DATABASE STATISTICS:")
@@ -314,7 +311,7 @@ def run_cli(db_path: str = "data/expenses.db"):
                     else:
                         print(db_stats)
                 
-                # Get custom statistics
+                
                 print(f"\n🎯 CUSTOM STATISTICS:")
                 print("-" * 40)
                 if hasattr(tracker, 'view_statistics'):
@@ -360,7 +357,7 @@ def run_cli(db_path: str = "data/expenses.db"):
                 
                 search_text = prompt_input("Search in description: ")
                 
-                # Build filters
+                
                 filters = {}
                 if start_date:
                     filters['start_date'] = start_date
@@ -375,7 +372,7 @@ def run_cli(db_path: str = "data/expenses.db"):
                 if search_text:
                     filters['text'] = search_text
                 
-                # Apply filters
+               
                 if hasattr(tracker, 'filter'):
                     results = tracker.filter(**filters)
                 elif hasattr(tracker.db, 'filter_expenses'):
